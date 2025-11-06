@@ -1,63 +1,53 @@
-pipeline{
+pipeline {
     agent any
 
     stages {
-        // Primera etapa.- Parar los servicios
         stage("Stopping Services") {
-            steps{
+            steps {
                 bat '''
+                    echo Apagando servicios Docker...
                     docker compose -p adj-demo down
                 '''
             }
         }
 
-        //Eliminando
         stage("Deleting Services") {
-            steps{
+            steps {
                 bat '''
-                    IMAGES=$(docker images rmi --filter "label=com.docker.compose.project=adj-demo" -q)
-                    if [-n '$IMAGES']; then
-                        docker images rmi $IMAGES
-                    else
-                        echo 'No hay imagenes por borrar..'
-                    fi
+                    echo Buscando imágenes con etiqueta adj-demo...
+                    for /f %%i in ('docker images --filter "label=com.docker.compose.project=adj-demo" -q') do (
+                        docker rmi -f %%i
+                    )
+                    echo Imágenes eliminadas (si existían).
                 '''
             }
         }
-        
-        //Actualizando
-        stage("Refresing project") {
-            steps{
+
+        stage("Refreshing Project") {
+            steps {
                 checkout scm
             }
         }
-        
-        //Construccion
+
         stage("Get up Services") {
-            steps{
+            steps {
                 bat '''
-                    docker compose up --build -d
+                    echo Levantando servicios con Docker Compose...
+                    docker compose -p adj-demo up --build -d
                 '''
             }
         }
-
-    
     }
 
     post {
-        success{
-            echo 'Pipeline ejecutada exitosamente'
+        success {
+            echo '✅ Pipeline ejecutada exitosamente'
         }
-
-        failure{
-            echo 'Error ejecutando el pipeline'
+        failure {
+            echo '❌ Error ejecutando el pipeline'
         }
-
-        always{
-            echo 'Pipeline finalizado'
+        always {
+            echo '📦 Pipeline finalizado'
         }
-
     }
-
-
 }
