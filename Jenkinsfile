@@ -5,7 +5,7 @@ pipeline{
         // Primera etapa.- Parar los servicios
         stage("Stopping Services") {
             steps{
-                sh '''
+                bat '''
                     docker compose -p adj-demo down || true
                 '''
             }
@@ -14,7 +14,7 @@ pipeline{
         //Eliminando
         stage("Deleting Services") {
             steps{
-                sh '''
+                bat '''
                     IMAGES=$(docker images rmi --filter "label=com.docker.compose.project=adj-demo" -q)
                     if [-n '$IMAGES']; then
                         docker images rmi $IMAGES
@@ -35,7 +35,7 @@ pipeline{
         //Construccion
         stage("Get up Services") {
             steps{
-                sh '''
+                bat '''
                     docker compose up --build -d
                 '''
             }
