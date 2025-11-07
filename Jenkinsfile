@@ -6,7 +6,7 @@ pipeline {
         stage('Parando los servicios...') {
             steps {
                 bat '''
-                    docker compose -p adj-demo down || true
+                    docker compose -p adj-demo down || exit /b 0
                 '''
             }
         }
